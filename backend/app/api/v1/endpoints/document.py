@@ -3,6 +3,7 @@ from typing import List
 import os
 import shutil
 from app.services.rag_service import RAGService
+from app.services.state_service import brain_state #
 from app.core.config import settings
 
 router = APIRouter()
@@ -21,13 +22,18 @@ async def upload_documents(files: List[UploadFile] = File(...)):
             saved_paths.append(path)
             
         docs, dfs = RAGService.load_files(saved_paths)
-        vectordb = RAGService.create_vector_store(docs)
         
-        # In a real app, store vectordb reference in state/session
-        return {"message": "Files processed", "docs_count": len(docs), "tables_count": len(dfs)}
+        # Save to global brain state
+        brain_state.vectordb = RAGService.create_vector_store(docs)
+        brain_state.dataframes = dfs
+        
+        return {
+            "message": "Files processed", 
+            "docs_count": len(docs), 
+            "tables_count": len(dfs),
+            "filenames": [f.filename for f in files] # Return names for confirmation
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # Cleanup temp files
-        for p in saved_paths:
-            if os.path.exists(p): os.remove(p)
+    # Finally block removed cleanup to ensure RAGService can read files if needed, 
+    # but load_files usually reads them into memory.

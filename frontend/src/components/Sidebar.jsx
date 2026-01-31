@@ -1,15 +1,20 @@
 import React from 'react';
 import { uploadFiles, clearHistory } from '../services/api';
-import { Settings, PlusCircle, Trash2 } from 'lucide-react';
+import { Settings, PlusCircle, Trash2, FileText } from 'lucide-react';
 
-function Sidebar({ model, setModel, setMessages }) {
+function Sidebar({ model, setModel, setMessages, uploadedFiles, setUploadedFiles }) {
     const handleFileUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
         
         try {
             alert("Digesting documents...");
-            await uploadFiles(files);
+            const response = await uploadFiles(files);
+            
+            // Add the new filenames to the sidebar list
+            const newFileNames = files.map(f => f.name);
+            setUploadedFiles(prev => [...new Set([...prev, ...newFileNames])]);
+            
             alert("Brain Updated!");
         } catch (err) {
             alert("Failed to upload files.");
@@ -17,9 +22,10 @@ function Sidebar({ model, setModel, setMessages }) {
     };
 
     const handleReset = async () => {
-        if (window.confirm("Perform lobotomy? All memory will be cleared.")) {
+        if (window.confirm("Perform lobotomy? All memory and files will be cleared.")) {
             await clearHistory();
             setMessages([]);
+            setUploadedFiles([]); // Clear the list in UI
         }
     };
 
@@ -33,13 +39,7 @@ function Sidebar({ model, setModel, setMessages }) {
             <div className="space-y-3 mb-10">
                 {['Google Gemini', 'OpenAI GPT-4o'].map(m => (
                     <label key={m} className={`flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all border ${model === m ? 'bg-blue-600/10 border-blue-500/50 text-white' : 'bg-transparent border-transparent text-gray-400 hover:bg-gray-700/50'}`}>
-                        <input 
-                            type="radio" 
-                            name="model" 
-                            checked={model === m} 
-                            onChange={() => setModel(m)}
-                            className="hidden" 
-                        />
+                        <input type="radio" name="model" checked={model === m} onChange={() => setModel(m)} className="hidden" />
                         <div className={`w-4 h-4 rounded-full border-2 ${model === m ? 'border-blue-400 bg-blue-400' : 'border-gray-500'}`} />
                         <span className="text-sm font-medium">{m}</span>
                     </label>
@@ -51,23 +51,26 @@ function Sidebar({ model, setModel, setMessages }) {
                     <PlusCircle size={20} />
                     <h2 className="uppercase text-[10px] font-bold tracking-[0.2em]">Feed the Brain</h2>
                 </div>
+                
+                {/* File List Display Area */}
+                <div className="mb-4 space-y-2">
+                    {uploadedFiles.map((fileName, index) => (
+                        <div key={index} className="flex items-center gap-2 p-2 bg-gray-900/50 rounded-lg border border-gray-700 text-xs text-gray-300">
+                            <FileText size={14} className="text-blue-400" />
+                            <span className="truncate">{fileName}</span>
+                        </div>
+                    ))}
+                </div>
+
                 <div className="relative group">
-                    <input 
-                        type="file" 
-                        multiple 
-                        onChange={handleFileUpload}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
+                    <input type="file" multiple onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className="p-4 border-2 border-dashed border-gray-600 rounded-xl text-center group-hover:border-blue-500 transition">
                         <p className="text-xs text-gray-400">Upload PDF, CSV, or TXT</p>
                     </div>
                 </div>
             </div>
 
-            <button 
-                onClick={handleReset}
-                className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-red-600/10 text-red-400 border border-red-600/30 rounded-xl hover:bg-red-600 hover:text-white transition-all group"
-            >
+            <button onClick={handleReset} className="mt-auto flex items-center justify-center gap-2 w-full py-3 bg-red-600/10 text-red-400 border border-red-600/30 rounded-xl hover:bg-red-600 hover:text-white transition-all group">
                 <Trash2 size={18} className="group-hover:animate-pulse" />
                 <span className="text-sm font-bold uppercase tracking-tight">Clear Brain</span>
             </button>

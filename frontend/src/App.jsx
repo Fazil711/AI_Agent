@@ -5,6 +5,7 @@ import { getHistory, chatWithAgent } from './services/api';
 
 function App() {
     const [messages, setMessages] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState([]); 
     const [model, setModel] = useState('Google Gemini');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -22,11 +23,11 @@ function App() {
             const aiMsg = { 
                 role: 'assistant', 
                 content: res.data.response,
-                image_url: res.data.image_path // Support for visualizations
+                image_url: res.data.image_path 
             };
             setMessages(prev => [...prev, aiMsg]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', content: "Error: Could not reach the brain. Is the backend running?" }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "Error: Could not reach the brain." }]);
         } finally {
             setIsLoading(false);
         }
@@ -34,14 +35,14 @@ function App() {
 
     return (
         <div className="flex h-screen w-full bg-gray-900 text-white overflow-hidden">
-            {/* Sidebar remains fixed on the left */}
             <Sidebar 
                 model={model} 
                 setModel={setModel} 
-                setMessages={setMessages} 
+                setMessages={setMessages}
+                uploadedFiles={uploadedFiles} // Pass list to Sidebar
+                setUploadedFiles={setUploadedFiles} // Pass setter to Sidebar
             />
             
-            {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 bg-gray-900 border-l border-gray-800">
                 <header className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 backdrop-blur-md">
                     <h1 className="text-xl font-bold flex items-center gap-2">
@@ -53,12 +54,7 @@ function App() {
                         </span>
                     </div>
                 </header>
-
-                <ChatWindow 
-                    messages={messages} 
-                    onSend={handleSendMessage} 
-                    isLoading={isLoading} 
-                />
+                <ChatWindow messages={messages} onSend={handleSendMessage} isLoading={isLoading} />
             </main>
         </div>
     );
