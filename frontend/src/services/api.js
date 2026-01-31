@@ -10,6 +10,8 @@ export const uploadFiles = (files) => {
     files.forEach(f => formData.append('files', f));
     return api.post('/documents/upload', formData);
 };
+// Fetch actual files in the "Brain"
+export const getUploadedFiles = () => api.get('/documents/files'); 
 export const getHistory = () => api.get('/history/');
 export const clearHistory = () => api.delete('/history/clear');
 

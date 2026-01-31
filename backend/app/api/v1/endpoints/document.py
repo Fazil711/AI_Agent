@@ -3,10 +3,14 @@ from typing import List
 import os
 import shutil
 from app.services.rag_service import RAGService
-from app.services.state_service import brain_state #
+from app.services.state_service import brain_state
 from app.core.config import settings
 
 router = APIRouter()
+
+@router.get("/files") # New endpoint to sync state on refresh
+async def get_files():
+    return {"filenames": brain_state.filenames}
 
 @router.post("/upload")
 async def upload_documents(files: List[UploadFile] = File(...)):
@@ -23,17 +27,17 @@ async def upload_documents(files: List[UploadFile] = File(...)):
             
         docs, dfs = RAGService.load_files(saved_paths)
         
-        # Save to global brain state
+        # Update global state
         brain_state.vectordb = RAGService.create_vector_store(docs)
-        brain_state.dataframes = dfs
+        brain_state.dataframes.extend(dfs)
+        
+        # Prevent duplicate names in the sidebar
+        new_names = [f.filename for f in files]
+        brain_state.filenames = list(set(brain_state.filenames + new_names))
         
         return {
             "message": "Files processed", 
-            "docs_count": len(docs), 
-            "tables_count": len(dfs),
-            "filenames": [f.filename for f in files] # Return names for confirmation
+            "filenames": brain_state.filenames
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    # Finally block removed cleanup to ensure RAGService can read files if needed, 
-    # but load_files usually reads them into memory.

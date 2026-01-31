@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import { getHistory, chatWithAgent } from './services/api';
+import { getHistory, chatWithAgent, getUploadedFiles } from './services/api'; // Added getUploadedFiles
 
 function App() {
     const [messages, setMessages] = useState([]);
@@ -10,7 +10,15 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        getHistory().then(res => setMessages(res.data)).catch(err => console.error("History Load Error:", err));
+        // 1. Sync Chat History
+        getHistory()
+            .then(res => setMessages(res.data))
+            .catch(err => console.error("History Load Error:", err));
+
+        // 2. Sync "Brain" Knowledge state (File list)
+        getUploadedFiles()
+            .then(res => setUploadedFiles(res.data.filenames))
+            .catch(err => console.error("File Sync Error:", err));
     }, []);
 
     const handleSendMessage = async (text) => {
@@ -23,7 +31,7 @@ function App() {
             const aiMsg = { 
                 role: 'assistant', 
                 content: res.data.response,
-                image_url: res.data.image_path 
+                image_url: res.data.image_path ? `outputs/${res.data.image_path}` : null 
             };
             setMessages(prev => [...prev, aiMsg]);
         } catch (error) {
@@ -39,8 +47,8 @@ function App() {
                 model={model} 
                 setModel={setModel} 
                 setMessages={setMessages}
-                uploadedFiles={uploadedFiles} // Pass list to Sidebar
-                setUploadedFiles={setUploadedFiles} // Pass setter to Sidebar
+                uploadedFiles={uploadedFiles} 
+                setUploadedFiles={setUploadedFiles} 
             />
             
             <main className="flex-1 flex flex-col min-w-0 bg-gray-900 border-l border-gray-800">
