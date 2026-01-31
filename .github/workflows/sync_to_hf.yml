@@ -8,15 +8,33 @@ jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Push to Hub
-        uses: nateraw/huggingface-sync-action@v0.0.5
-        with:
-          github_repo_id: Fazil711/AI_Agent
-          huggingface_repo_id: fazil1234/RAG_APP
-          repo_type: space
-          space_sdk: docker
-          hf_token: ${{ secrets.HF_TOKEN }}
-          subdirectory: backend
+
+      - name: Push Backend to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # 1. Configure Git credentials
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # 2. Clone your Hugging Face Space repository
+          # Ensure you use your exact HF username and Space name
+          git clone https://fazil1234:$HF_TOKEN@huggingface.co/spaces/fazil1234/RAG_APP hf_space
+
+          # 3. Use rsync to mirror the backend folder to the Space root
+          # The trailing slash on 'backend/' copies only its CONTENTS
+          rsync -av --delete backend/ hf_space/ --exclude .git
+
+          # 4. Commit and Push to Hugging Face
+          cd hf_space
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to sync."
+          else
+            git commit -m "Sync from GitHub commit: ${GITHUB_SHA::8}"
+            git push origin main
+          fi
