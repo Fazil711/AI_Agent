@@ -31,7 +31,8 @@ function App() {
             const aiMsg = { 
                 role: 'assistant', 
                 content: res.data.response,
-                image_url: res.data.image_path ? `outputs/${res.data.image_path}` : null 
+                //image_url: res.data.image_path ? `outputs/${res.data.image_path}` : null 
+                image_url: res.data.image_path ? `https://fazil1234-rag-app.hf.space/outputs/${res.data.image_path}` : null
             };
             setMessages(prev => [...prev, aiMsg]);
         } catch (error) {

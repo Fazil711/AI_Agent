@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/v1',
+    //baseURL: 'http://127.0.0.1:8000/api/v1',
+    baseURL: 'https://fazil1234-rag-app.hf.space/api/v1',
 });
 
 export const chatWithAgent = (message, model) => api.post('/chat/', { message, model });
