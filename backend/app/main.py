@@ -4,8 +4,6 @@ from app.api.v1.api_router import api_router
 from app.db.session import init_db
 from fastapi.staticfiles import StaticFiles
 
-# Add this to your app/main.py
-
 app = FastAPI(title="AI Brain Backend")
 
 app.add_middleware(
