@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* Force the application to fill the entire screen */
+html, body, #root {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevents global scrollbars */
+}
+
+/* Custom layout variables for Tailwind v4 */
+@theme {
+  --color-brand-dark: #111827;
+  --color-brand-blue: #2563eb;
+}
+
+/* Custom Scrollbar for Chat */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
