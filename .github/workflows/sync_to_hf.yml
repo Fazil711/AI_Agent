@@ -1,0 +1,22 @@
+name: Sync to Hugging Face
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Push to Hub
+        uses: nateraw/huggingface-sync-action@v0.0.5
+        with:
+          github_repo_id: Fazil711/AI_Agent
+          huggingface_repo_id: fazil1234/RAG_APP
+          repo_type: space
+          space_sdk: docker
+          hf_token: ${{ secrets.HF_TOKEN }}
+          subdirectory: backend
